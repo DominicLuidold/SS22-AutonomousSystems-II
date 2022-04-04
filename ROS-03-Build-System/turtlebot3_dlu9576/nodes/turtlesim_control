@@ -1,0 +1,59 @@
+#!/usr/bin/env python
+import rospy
+from typing import Tuple
+from geometry_msgs.msg import Twist
+from turtlebot3_dlu9576.srv import ControlStatus
+
+# Launch arguments
+TURTLE_NAME = rospy.get_param('turtle_name')
+NODE_NAME = rospy.get_param('node_name')
+CONSOLE_OUTPUT = rospy.get_param('console_output')
+
+# Movement config
+LINEAR_X = rospy.get_param('linear_x', 0)
+ANGULAR_Z = rospy.get_param('angular_z', 0)
+
+class Control():
+    def __init__(self) -> None:
+        self._cmd_pub = rospy.Publisher('{}/cmd_vel'.format(TURTLE_NAME), Twist, queue_size=1)
+        self._rate = rospy.Rate(10)
+
+        # Create control status service
+        rospy.Service('turtlesim_control_status', ControlStatus, self.update_control_status)
+
+        # Default control status
+        self._enabled = True
+
+        self.control()
+
+    def update_control_status(self, srv_msg: ControlStatus) -> Tuple[bool, bool]:
+        # Get old control status
+        old_status = self._enabled
+
+        # Set new control status
+        self._enabled = srv_msg.enabled
+
+        return (old_status, srv_msg.enabled)
+
+    def control(self) -> None:
+        twist = Twist()
+
+        while not rospy.is_shutdown():
+            if self._enabled:
+                twist.linear.x = LINEAR_X
+                twist.angular.z = ANGULAR_Z
+                self._cmd_pub.publish(twist)
+                self._rate.sleep()
+                
+                if CONSOLE_OUTPUT:
+                    rospy.loginfo('Sending new position..')
+
+def main() -> None:
+    rospy.init_node(NODE_NAME)
+    try:
+        Control()
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == '__main__':
+    main()

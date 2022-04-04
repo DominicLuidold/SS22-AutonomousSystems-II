@@ -1,0 +1,15 @@
+<launch>
+    <!-- Required arguments -->
+    <arg name="path" doc="path to store json file" />
+
+    <!-- Optional arguments -->
+    <arg name="turtle_name" default="turtle1" doc="name of turtle (node) to log data" />
+    <arg name="node_name" default="turtlesim_logger" doc="node name" />
+
+    <!-- Parameters -->
+    <param name="path" type="str" value="$(arg path)" />
+    <param name="turtle_name" type="str" value="$(arg turtle_name)" />
+    <param name="node_name" type="str" value="$(arg node_name)" />
+
+    <node pkg="turtlebot3_dlu9576" type="turtlesim_logger" name="$(arg node_name)" output="screen" />
+</launch>

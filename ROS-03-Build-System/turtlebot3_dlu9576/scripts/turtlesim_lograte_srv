@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+import rospy
+import sys
+from turtlebot3_dlu9576.srv import LogRate
+
+def log_rate_client(rate: float):
+    rospy.wait_for_service('turtlesim_log_rate')
+    try:
+        update_log_rate = rospy.ServiceProxy('turtlesim_log_rate', LogRate)
+        return update_log_rate(rate)
+    except rospy.ServiceException as e:
+        print('Service call failed: {}'.format(e))
+
+def usage() -> str:
+    return '{} [rate]'.format(sys.argv[0])
+
+if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        new_rate = float(sys.argv[1])
+    else:
+        print(usage())
+        sys.exit(1)
+    
+    print('Requesting new log rate of "{}"'.format(new_rate))
+    response = log_rate_client(new_rate)
+    print('Old log rate: {} / New log rate: {}'.format(response.old_rate, response.new_rate))

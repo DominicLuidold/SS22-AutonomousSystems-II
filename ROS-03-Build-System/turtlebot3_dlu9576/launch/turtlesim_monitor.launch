@@ -1,0 +1,15 @@
+<launch>
+    <!-- Optional arguments -->
+    <arg name="turtle_name" default="turtle1" doc="name of turtle (node) to monitor" />
+    <arg name="node_name" default="turtlesim_monitor" doc="node name" />
+    <arg name="console_output" default="true" doc="enable/disable console output" />
+    <arg name="path_analyzer" default="true" doc="enable/disable pygame path analyzer" />
+
+    <!-- Parameters -->
+    <param name="turtle_name" type="str" value="$(arg turtle_name)" />
+    <param name="node_name" type="str" value="$(arg node_name)_pygame" />
+    <param name="console_output" type="bool" value="$(arg console_output)" />
+
+    <node pkg="turtlebot3_dlu9576" type="turtlesim_monitor" name="$(arg node_name)" output="screen" />
+    <node pkg="turtlebot3_dlu9576" type="turtlesim_pygame" name="$(arg node_name)_pygame" output="log" if="$(arg path_analyzer)" />
+</launch>

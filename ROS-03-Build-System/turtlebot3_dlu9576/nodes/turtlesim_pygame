@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+import rospy
+import pygame
+from turtlebot3_dlu9576.msg import TurtleStatus
+
+# Launch arguments
+TURTLE_NAME = rospy.get_param('turtle_name')
+NODE_NAME = rospy.get_param('node_name')
+
+class PyGame():
+    def __init__(self, screen: pygame.Surface, black) -> None:
+        self._screen = screen
+        self._black = black
+
+        self._x = 150
+        self._y = 150
+
+        rospy.Subscriber('{}/status'.format(TURTLE_NAME), TurtleStatus, self.status_changed)
+
+    def status_changed(self, status: TurtleStatus) -> None:
+        pygame.draw.circle(self._screen, self._black, (int(status.pose.x * 10), int(status.pose.y * 10)), 1)
+        pygame.display.update()
+
+def main() -> None:
+    rospy.init_node(NODE_NAME)
+    pygame.init()
+    black = (0, 0, 0)
+    white = (255, 255, 255)
+    screen = pygame.display.set_mode((500, 500), 0, 32)
+    screen.fill(white)
+    pygame.display.set_caption('TurtleSim Path Analyzer - dlu9576')
+
+    PyGame(screen, black)
+
+    try:
+        rospy.spin() # Run until node is stopped
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == '__main__':
+    main()

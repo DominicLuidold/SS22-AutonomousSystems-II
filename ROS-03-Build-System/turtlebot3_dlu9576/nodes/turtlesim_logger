@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+import json
+import rospy
+import yaml
+from typing import Tuple
+from turtlebot3_dlu9576.msg import TurtleStatus
+from turtlebot3_dlu9576.srv import LogRate
+
+# Launch arguments
+TURTLE_NAME = rospy.get_param('turtle_name')
+NODE_NAME = rospy.get_param('node_name')
+PATH = rospy.get_param('path')
+
+class Logger():
+    def __init__(self) -> None:
+        # Subscribe to status information
+        rospy.Subscriber('{}/status'.format(TURTLE_NAME), TurtleStatus, self.log_data)
+
+        # Create log rate service
+        rospy.Service('turtlesim_log_rate', LogRate, self.update_log_rate)
+
+        # Default log rate
+        self._current_log_rate = 10
+        self._rate = rospy.Rate(self._current_log_rate)
+
+    def update_log_rate(self, srv_msg: LogRate) -> Tuple[float, float]:
+        # Get old log rate
+        old_rate = self._current_log_rate
+
+        # Set new log rate
+        self._current_log_rate = srv_msg.rate
+        self._rate = rospy.Rate(self._current_log_rate)
+
+        return (old_rate, srv_msg.rate)
+
+    def log_data(self, data) -> None:
+        rospy.loginfo('Writing data to log file..')
+        json = msg_to_json(data)
+
+        with open(PATH, 'a', newline='') as file:
+            # Simply appending the data at the end of the json file won't generate a valid json object.
+            # For the purpose of this simple logging-mechanism, it should be fine though.. 
+            file.write(json + ',')
+
+        self._rate.sleep()
+
+# Source: https://answers.ros.org/question/196365/is-there-a-general-way-to-convert-ros-messages-into-json-format/?answer=273429#post-id-273429
+def msg_to_json(msg: TurtleStatus) -> str:
+    y = yaml.load(str(msg), Loader=yaml.SafeLoader)
+
+    return json.dumps(y, indent=4)
+
+def main() -> None:
+    rospy.init_node(NODE_NAME)
+    Logger()
+
+    try:
+        rospy.spin() # Run until node is stopped
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,14 @@
+<launch>
+    <!-- Optional arguments -->
+    <arg name="turtle_name" default="turtle1" doc="name of turtle (node) to control" />
+    <arg name="node_name" default="turtlesim_control" doc="node name" />
+    <arg name="console_output" default="true" doc="enable/disable console output" />
+
+    <!-- Parameters -->
+    <param name="turtle_name" type="str" value="$(arg turtle_name)" />
+    <param name="node_name" type="str" value="$(arg node_name)" />
+    <param name="console_output" type="bool" value="$(arg console_output)" />
+    <rosparam file="$(find turtlebot3_dlu9576)/config/turtlesim_control.yaml" command="load" />
+
+    <node pkg="turtlebot3_dlu9576" type="turtlesim_control" name="$(arg node_name)" output="screen" />
+</launch>

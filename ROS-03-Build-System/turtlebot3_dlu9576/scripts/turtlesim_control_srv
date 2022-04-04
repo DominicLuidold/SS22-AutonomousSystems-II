@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+import rospy
+import sys
+from turtlebot3_dlu9576.srv import ControlStatus
+
+def control_status_client(enabled: bool):
+    rospy.wait_for_service('turtlesim_control_status')
+    try:
+        update_control_status = rospy.ServiceProxy('turtlesim_control_status', ControlStatus)
+        return update_control_status(enabled)
+    except rospy.ServiceException as e:
+        print('Service call failed: {}'.format(e))
+
+def usage() -> str:
+    return '{} [status]'.format(sys.argv[0])
+
+if __name__ == '__main__':
+    if len(sys.argv) == 2:
+        new_status = eval(sys.argv[1])
+    else:
+        print(usage())
+        sys.exit(1)
+    
+    print('Requesting new status "{}"'.format(new_status))
+    response = control_status_client(new_status)
+    print('Old control status: {} / New control status: {}'.format(response.old_status, response.new_status))

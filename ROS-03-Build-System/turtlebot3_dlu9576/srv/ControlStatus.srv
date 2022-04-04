@@ -1,0 +1,4 @@
+bool enabled
+---
+bool old_status
+bool new_status

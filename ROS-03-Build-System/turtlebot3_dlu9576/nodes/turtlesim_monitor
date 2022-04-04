@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+import rospy
+from geometry_msgs.msg import Twist
+from turtlesim.msg import Color, Pose
+from turtlebot3_dlu9576.msg import TurtleStatus
+
+# Launch arguments
+TURTLE_NAME = rospy.get_param('turtle_name')
+NODE_NAME = rospy.get_param('node_name')
+CONSOLE_OUTPUT = rospy.get_param("console_output")
+
+class Monitor():
+    def __init__(self) -> None:
+        # Subscribe to all relevant Turtlesim topics
+        rospy.Subscriber('{}/cmd_vel'.format(TURTLE_NAME), Twist, self.twist_state_changed)
+        rospy.Subscriber('{}/color_sensor'.format(TURTLE_NAME), Color, self.color_state_changed)
+        rospy.Subscriber('{}/pose'.format(TURTLE_NAME), Pose, self.pose_state_changed)
+
+        # Publish
+        self._status_pub = rospy.Publisher('%s/status' % TURTLE_NAME, TurtleStatus, queue_size=1)
+
+        # Previous states
+        self._last_twist_msg = None
+        self._last_color_msg = None
+        self._last_pose_msg = None
+
+    def twist_state_changed(self, twist_data) -> None:
+        # Ignore data if twist hasn't changed
+        if twist_data == self._last_twist_msg:
+            return
+
+        status_msg = TurtleStatus()
+        self._last_twist_msg = status_msg.twist = twist_data
+        self.publish(status_msg)
+
+    def color_state_changed(self, color_data) -> None:
+        # Ignore data if color hasn't changed
+        if color_data == self._last_color_msg:
+            return
+
+        status_msg = TurtleStatus()
+        self._last_color_msg = status_msg.color = color_data
+        self.publish(status_msg)
+
+    def pose_state_changed(self, pose_data) -> None:
+        # Ignore data if pose hasn't changed
+        if pose_data == self._last_pose_msg:
+            return
+
+        status_msg = TurtleStatus()
+        self._last_pose_msg = status_msg.pose = pose_data
+        self.publish(status_msg)
+
+    def publish(self, status_msg: TurtleStatus) -> None:
+        self._status_pub.publish(status_msg)
+
+        if CONSOLE_OUTPUT:
+            rospy.loginfo('Status of turtle "{}" has changed:\n{}\n-------------------------------------'.format(TURTLE_NAME, status_msg))
+
+def main() -> None:
+    rospy.init_node(NODE_NAME)
+    Monitor()
+
+    try:
+        rospy.spin() # Run until node is stopped
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,4 @@
+float64 rate
+---
+float64 old_rate
+float64 new_rate
