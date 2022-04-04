@@ -1,0 +1,9 @@
+<launch>
+    <!-- Required arguments -->
+    <arg name="img_mode" doc="[default, gray]" />
+
+    <!-- Parameters -->
+    <param name="img_mode" type="str" value="$(arg img_mode)" />
+
+    <node pkg="turtlebot3_camera_dlu9576" type="turtlesim_camera_visualization" name="turtlebot3_camera_vis" output="screen" />
+</launch>
