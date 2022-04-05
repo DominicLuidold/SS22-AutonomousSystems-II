@@ -2,7 +2,7 @@
 import rospy
 from typing import Tuple
 from geometry_msgs.msg import Twist
-from turtlebot3_dlu9576.srv import ControlStatus
+from build_system_dlu9576.srv import ControlStatus
 
 # Launch arguments
 TURTLE_NAME = rospy.get_param('turtle_name')

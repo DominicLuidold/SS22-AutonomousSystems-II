@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import pygame
-from turtlebot3_dlu9576.msg import TurtleStatus
+from build_system_dlu9576.msg import TurtleStatus
 
 # Launch arguments
 TURTLE_NAME = rospy.get_param('turtle_name')

@@ -8,7 +8,7 @@
     <param name="turtle_name" type="str" value="$(arg turtle_name)" />
     <param name="node_name" type="str" value="$(arg node_name)" />
     <param name="console_output" type="bool" value="$(arg console_output)" />
-    <rosparam file="$(find turtlebot3_dlu9576)/config/turtlesim_control.yaml" command="load" />
+    <rosparam file="$(find build_system_dlu9576)/config/turtlesim_control.yaml" command="load" />
 
-    <node pkg="turtlebot3_dlu9576" type="turtlesim_control" name="$(arg node_name)" output="screen" />
+    <node pkg="build_system_dlu9576" type="turtlesim_control" name="$(arg node_name)" output="screen" />
 </launch>

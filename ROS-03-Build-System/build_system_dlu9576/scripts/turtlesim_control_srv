@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import sys
-from turtlebot3_dlu9576.srv import ControlStatus
+from build_system_dlu9576.srv import ControlStatus
 
 def control_status_client(enabled: bool):
     rospy.wait_for_service('turtlesim_control_status')

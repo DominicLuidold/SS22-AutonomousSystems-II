@@ -10,6 +10,6 @@
     <param name="node_name" type="str" value="$(arg node_name)_pygame" />
     <param name="console_output" type="bool" value="$(arg console_output)" />
 
-    <node pkg="turtlebot3_dlu9576" type="turtlesim_monitor" name="$(arg node_name)" output="screen" />
-    <node pkg="turtlebot3_dlu9576" type="turtlesim_pygame" name="$(arg node_name)_pygame" output="log" if="$(arg path_analyzer)" />
+    <node pkg="build_system_dlu9576" type="turtlesim_monitor" name="$(arg node_name)" output="screen" />
+    <node pkg="build_system_dlu9576" type="turtlesim_pygame" name="$(arg node_name)_pygame" output="log" if="$(arg path_analyzer)" />
 </launch>

@@ -3,8 +3,8 @@ import json
 import rospy
 import yaml
 from typing import Tuple
-from turtlebot3_dlu9576.msg import TurtleStatus
-from turtlebot3_dlu9576.srv import LogRate
+from build_system_dlu9576.msg import TurtleStatus
+from build_system_dlu9576.srv import LogRate
 
 # Launch arguments
 TURTLE_NAME = rospy.get_param('turtle_name')

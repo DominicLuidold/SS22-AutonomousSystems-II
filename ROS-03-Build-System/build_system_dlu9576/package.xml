@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>turtlebot3_dlu9576</name>
+  <name>build_system_dlu9576</name>
   <version>0.1.0</version>
-  <description>The turtlebot3_dlu9576 package</description>
+  <description>The build_system_dlu9576 package</description>
 
   <maintainer email="dominic.luidold@students.fhv.at">Dominic Luidold</maintainer>
 

@@ -2,7 +2,7 @@
 import rospy
 from geometry_msgs.msg import Twist
 from turtlesim.msg import Color, Pose
-from turtlebot3_dlu9576.msg import TurtleStatus
+from build_system_dlu9576.msg import TurtleStatus
 
 # Launch arguments
 TURTLE_NAME = rospy.get_param('turtle_name')
