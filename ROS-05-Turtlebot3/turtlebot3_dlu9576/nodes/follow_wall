@@ -1,0 +1,106 @@
+#!/usr/bin/env python
+import rospy
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist
+
+# Copied from turtlebot3/turtlebot3_example/nodes/turtlebot3_obstacle
+STOP_DISTANCE = 0.2
+LIDAR_ERROR = 0.05
+SAFE_STOP_DISTANCE = STOP_DISTANCE + LIDAR_ERROR
+
+class FollowWall():
+    def __init__(self) -> None:
+        # Subscribe to laser scan topic
+        rospy.Subscriber('/scan', LaserScan, self.laser_scan_changed)
+
+        # Publish
+        self._cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self._rate = rospy.Rate(10)
+
+        self._laser_data = None
+        self.coordinate_movement()
+
+    def laser_scan_changed(self, scan: LaserScan) -> None:
+        self._laser_data = {
+            'left': min(scan.ranges[260:299]),
+            'front_left': min(scan.ranges[300:329]),
+            'front': min(min(scan.ranges[330:359]), min(scan.ranges[0:30])),
+            'front_right': min(scan.ranges[30:60]),
+            'right': min(scan.ranges[61:120]),
+        }
+
+    # If-elif-else statements inspired by https://www.theconstructsim.com/wall-follower-algorithm/
+    def coordinate_movement(self) -> None:
+        while not rospy.is_shutdown():
+            if None != self._laser_data:
+                twist = None
+                if self._laser_data['front'] > SAFE_STOP_DISTANCE and self._laser_data['front_left'] > SAFE_STOP_DISTANCE and self._laser_data['front_right'] > SAFE_STOP_DISTANCE:
+                    # Wall not in front, front-left or left side
+                    twist = self.drive_to_wall_in_front()
+                elif self._laser_data['front'] < SAFE_STOP_DISTANCE and self._laser_data['front_left'] > SAFE_STOP_DISTANCE and self._laser_data['front_right'] > SAFE_STOP_DISTANCE:
+                    # Wall in front; not on front-left or left side
+                    twist = self.turn_left()
+                elif self._laser_data['front'] > SAFE_STOP_DISTANCE and self._laser_data['front_left'] > SAFE_STOP_DISTANCE and self._laser_data['front_right'] < SAFE_STOP_DISTANCE:
+                    # Wall on right side; not in front or front-left side
+                    twist = self.follow_wall()
+                elif self._laser_data['front'] > SAFE_STOP_DISTANCE and self._laser_data['front_left'] < SAFE_STOP_DISTANCE and self._laser_data['front_right'] > SAFE_STOP_DISTANCE:
+                    # Wall on front-left side; not in front or front-right side
+                    twist = self.find_wall()
+                elif self._laser_data['front'] < SAFE_STOP_DISTANCE and self._laser_data['front_left'] > SAFE_STOP_DISTANCE and self._laser_data['front_right'] < SAFE_STOP_DISTANCE:
+                    # Wall in front and front-right side; not on front-left side
+                    twist = self.turn_left()
+                elif self._laser_data['front'] < SAFE_STOP_DISTANCE and self._laser_data['front_left'] < SAFE_STOP_DISTANCE and self._laser_data['front_right'] > SAFE_STOP_DISTANCE:
+                    # Wall in front and front-left side; not on front-right side
+                    twist = self.turn_left()
+                elif self._laser_data['front'] < SAFE_STOP_DISTANCE and self._laser_data['front_left'] < SAFE_STOP_DISTANCE and self._laser_data['front_right'] < SAFE_STOP_DISTANCE:
+                    # Wall in front, on front-left and front-right side
+                    twist = self.turn_left()
+                elif self._laser_data['front'] > SAFE_STOP_DISTANCE and self._laser_data['front_left'] < SAFE_STOP_DISTANCE and self._laser_data['front_right'] < SAFE_STOP_DISTANCE:
+                    # Wall on front-left and front-right side; not in front; 
+                    twist = self.find_wall()
+                else:
+                    # Wall anywhere/nowhere?
+                    twist = Twist()
+                    rospy.loginfo('Unknown robot status/location')
+
+                self._cmd_pub.publish(twist)
+                self._rate.sleep()
+
+    def drive_to_wall_in_front(self) -> Twist:
+        rospy.loginfo('Driving to wall in front..')
+        twist = Twist()
+        twist.linear.x = 0.2
+
+        return twist
+
+    def find_wall(self) -> Twist:
+        rospy.loginfo('Finding wall..')
+        twist = Twist()
+        twist.linear.x = 0.15
+        twist.angular.z = -0.25
+
+        return twist
+
+    def turn_left(self) -> Twist:
+        rospy.loginfo('Turning left..')
+        twist = Twist()
+        twist.angular.z = 0.3
+
+        return twist
+
+    def follow_wall(self) -> Twist:
+        rospy.loginfo('Following wall..')
+        twist = Twist()
+        twist.linear.x = 0.5
+
+        return twist
+
+def main() -> None:
+    rospy.init_node('follow_wall')
+    try:
+        FollowWall()
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == '__main__':
+    main()

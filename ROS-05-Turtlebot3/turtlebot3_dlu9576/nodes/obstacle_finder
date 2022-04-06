@@ -1,0 +1,64 @@
+#!/usr/bin/env python
+import rospy
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist
+
+# Copied from turtlebot3/turtlebot3_example/nodes/turtlebot3_obstacle
+LINEAR_VEL = 0.22
+STOP_DISTANCE = 0.2
+LIDAR_ERROR = 0.05
+SAFE_STOP_DISTANCE = STOP_DISTANCE + LIDAR_ERROR
+
+class ObstacleFinder():
+    def __init__(self) -> None:
+        # Subscribe to laser scan topic
+        rospy.Subscriber('/scan', LaserScan, self.laser_scan_changed)
+
+        # Publish
+        self._cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
+        self._rate = rospy.Rate(10)
+
+        self._angle = None
+        self.drive_to_obstacle()
+    
+    def laser_scan_changed(self, scan: LaserScan) -> None:
+        # Note: scan.range_min is not the min value, rather the min detection in meters
+        self._angle = scan.ranges.index(min(scan.ranges))
+        self._distance_to_obj = min(scan.ranges)
+    
+    def drive_to_obstacle(self) -> None:
+        while not rospy.is_shutdown():
+            if None != self._angle:
+                twist = Twist()
+
+                if self._distance_to_obj > SAFE_STOP_DISTANCE:
+                    # Object is in front
+                    if self._angle <= 15 or self._angle >= 345:
+                        rospy.loginfo('Moving forward..')
+                        twist.linear.x = LINEAR_VEL
+                    else:
+                        if self._angle <= 180:
+                            # Object on left side
+                            rospy.loginfo('Steering left..')
+                            twist.angular.z = 0.3
+                        else:
+                            # Object on right side
+                            rospy.loginfo('Steering right..')
+                            twist.angular.z = -0.3
+                else:
+                    rospy.loginfo('Stopping..')
+                    twist.linear.x = 0.0
+                    twist.angular.z = 0.0
+                
+                self._cmd_pub.publish(twist)
+                self._rate.sleep()
+
+def main() -> None:
+    rospy.init_node('drive_to_obstacle')
+    try:
+        ObstacleFinder()
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == '__main__':
+    main()
